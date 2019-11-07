@@ -1,0 +1,46 @@
+---
+title: "P8105 Homework5 Solution"
+author: "Xun Wang"
+date: "11/07/2019"
+output: github_document
+---
+
+This file is the solution to P8105 Homework 5 from Xun Wang (xw2417).
+
+Besides loading `library` in the beginning, I also include figure preferences in global options as this code chunk.
+
+```{r setup, message=FALSE}
+library(tidyverse)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+```
+
+## Problem 1
+
+This problem uses the *Instacart* dataset.
+
+#### 1.1 Read datasets from Github
+
+The code chunk below reads the dataset *instacart* from Github package *p8105.datasets*.
+
+```{r read_instacart}
+library(p8105.datasets)
+data("instacart")
+instacart = janitor::clean_names(instacart)
+```
+
+**Comments:** The *instacart* dataset read from Github is cleaned by `janitor::clean_names`. The *instacart* dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The **key** variables are the *order_id* and *product_id*. For example, in order 1 ordered by user 112108, Bulgarian Yogurt (product 49302) was the first to be added to the cart. This was the 4th time the user placed an order and this product was reordered by the user. The order was placed on Thursday between 10-11 am, 9 days after the user's last purchase. This product was placed at *yogurt* aisle (aisle_id 120) in the *dairy & eggs* department (department_id 16).
+
