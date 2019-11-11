@@ -207,12 +207,12 @@ inner_join(table_1, table_2, by = "slope") %>%
   pivot_longer(
     all_samples:null_rejected_samples,
     names_to = "sample_type",
-    values_to = "β1_hat_average"
+    values_to = "beta1_hat_average"
   ) %>% 
   mutate(
     slope = str_c("β1 = ", slope),
     slope = fct_inorder(slope)) %>% 
-  ggplot(aes(x = slope, y = β1_hat_average, color = sample_type)) + 
+  ggplot(aes(x = slope, y = beta1_hat_average, color = sample_type)) + 
   geom_point() +
   geom_line(aes(group = sample_type)) +
   labs(
