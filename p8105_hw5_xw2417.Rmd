@@ -7,10 +7,9 @@ output: github_document
 
 This file is the solution to P8105 Homework 5 from Xun Wang (xw2417).
 
-Besides loading `library` in the beginning, I also include figure preferences in global options as this code chunk.
-
 ```{r setup, message=FALSE}
 library(tidyverse)
+library(rvest)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -19,26 +18,57 @@ knitr::opts_chunk$set(
   fig.height = 6,
   out.width = "90%"
 )
+
 options(
   ggplot2.continuous.colour = "viridis",
   ggplot2.continuous.fill = "viridis"
 )
+
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
+
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+set.seed(10)
 ```
 
 #### Problem 1
 
-This problem uses the `iris` dataset. The code chunk below loads the `iris` dataset and introduces some missing values in each column.
+This problem uses the `iris` dataset. The code chunk below loads the dataset and introduces missing values in each column.
 
 ```{r}
-set.seed(10)
-
 iris_with_missing = iris %>% 
   map_df(~replace(.x, sample(1:150, 20), NA)) %>%
   mutate(Species = as.character(Species)) %>% 
   janitor::clean_names()
 ```
+
+The code chunk below generates a function that takes a vector as an argument; replaces missing values; and returns the resulting vector. 
+
+```{r}
+replace_missing = function(x) {
+  
+  if (is.numeric(x)) {
+    x[is.na(x)] = mean(x, na.rm = TRUE)
+  } else if (is.character(x)) {
+    x[is.na(x)] = "virginica"
+  } else {
+    stop("Argument x should be numeric or character")
+  }
+  x
+}
+```
+
+The code chunk below replaces missing values in the `iris_with_missing` with
+* the mean of non-missing values for numeric variables
+* "virginica" for character variables
+and generates a `tibble` output.
+
+```{r}
+iris_complete = map_df(iris_with_missing, replace_missing)
+
+iris_complete
+```
+
 
 
