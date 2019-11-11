@@ -151,11 +151,10 @@ sim_results_0
 Second, the code chunk below repeats the above for *β1* = 1,2,3,4,5,6, and generates a dataframe for the simulation results.
 
 ```{r beta_multi}
-
 sim_results = 
-  tibble(slope_list = c(0, 1, 2, 3, 4, 5, 6)) %>% 
+  tibble(slope = c(0, 1, 2, 3, 4, 5, 6)) %>% 
   mutate(
-    output_lists = map(.x = slope_list, ~rerun(10000, sim_regression(beta1 = .x))),
+    output_lists = map(.x = slope, ~rerun(10000, sim_regression(beta1 = .x))),
     estimate_dfs = map(output_lists, bind_rows)) %>% 
   select(-output_lists) %>% 
   unnest(estimate_dfs)
@@ -163,6 +162,64 @@ sim_results =
 sim_results
 ```
 
+Third, the code chunk below makes a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of β1 on the x axis. Describe the association between effect size and power.
 
+```{r power_plot}
+sim_results %>% 
+  group_by(slope) %>% 
+  summarize(
+    power = sum(p_value <= 0.05) / n()
+  ) %>% 
+  mutate(
+    slope = str_c("β1 = ", slope),
+    slope = fct_inorder(slope)) %>% 
+  ggplot(aes(x = slope, y = power, fill = slope)) + 
+  geom_bar(stat = 'identity') +
+  labs(
+    title = "The association between effect size and power plot",
+    x = "true slope",
+    y = "the power of the test"
+  )
+```
 
+**Comments:** From the figure above, we can see when the effect size β1 increase, the power of the test increases. So larger effect size means more power.
 
+Last, the code chunk below makes plots showing the relationship of average estimate of β1_hat and β1.
+
+```{r esti_true_plots}
+
+table_1 = 
+  sim_results %>% 
+  group_by(slope) %>% 
+  summarize(
+    all_samples = mean(beta1_hat, na.rm = TRUE)
+  )
+
+table_2 = 
+  sim_results %>% 
+  filter(p_value <= 0.05) %>% 
+  group_by(slope) %>% 
+  summarize(
+    null_rejected_samples = mean(beta1_hat, na.rm = TRUE)
+  )
+
+inner_join(table_1, table_2, by = "slope") %>% 
+  pivot_longer(
+    all_samples:null_rejected_samples,
+    names_to = "sample_type",
+    values_to = "β1_hat_average"
+  ) %>% 
+  mutate(
+    slope = str_c("β1 = ", slope),
+    slope = fct_inorder(slope)) %>% 
+  ggplot(aes(x = slope, y = β1_hat_average, color = sample_type)) + 
+  geom_point() +
+  geom_line(aes(group = sample_type)) +
+  labs(
+    title = "The association between average estimates and true values",
+    x = "true slope",
+    y = "average value of β1_hat "
+  )
+```
+
+**Comments:** From the figure above, we can see the average estimates of β1_hat from both all sampels and samples for which the null was rejected increase when the true slope incrases. The average estimates of β1_hat from all sampels are very close to the true slopes but the sample average of β1_hat across  tests for which the null is rejected **isn't** approximately equal to the true value of β1. This is because the samples for which the null was rejected can't persuade people statistically to accept them and they are "black sheep" in their own sample group. 
